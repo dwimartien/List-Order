@@ -3,7 +3,7 @@
 // Firebase Console -> Project Settings -> General -> "Your apps" -> Web app
 // =====================================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyB5hUkh-CXVBwI1dz0z7M6ykFaFfdonxjo",
+    apiKey: "AIzaSyB5hUkh-CXVBwI1dz0z7M6ykFaFfdonxjo",
   authDomain: "list-order-e2969.firebaseapp.com",
   projectId: "list-order-e2969",
   storageBucket: "list-order-e2969.firebasestorage.app",
@@ -11,6 +11,12 @@ const firebaseConfig = {
   appId: "1:481906633016:web:290ffbbd5e2beb0a3db9cd",
   measurementId: "G-RE0JCQK537"
 };
+
+// PENTING kalau pakai Google Sign-In: Google Sign-In tanpa batasan berarti
+// SIAPA SAJA yang punya akun Google bisa login ke app kamu. Isi email kamu
+// sendiri di sini supaya hanya akun ini yang diterima; akun Google lain akan
+// otomatis di-logout. Kosongkan ("") kalau kamu HANYA pakai email/password.
+const ADMIN_EMAIL = "isi-email-google-kamu@gmail.com";
 
 // VAPID key untuk web push notification.
 // Ambil di: Firebase Console -> Project Settings -> Cloud Messaging -> Web Push certificates -> Generate key pair
