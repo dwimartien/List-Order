@@ -39,8 +39,13 @@ function hide(node) { node.style.display = "none"; }
 // -------------------------------------------------------------------------
 // AUTH
 // -------------------------------------------------------------------------
-auth.onAuthStateChanged(user => {
+auth.onAuthStateChanged(async user => {
   if (user) {
+    if (ADMIN_EMAIL && user.email !== ADMIN_EMAIL) {
+      await auth.signOut();
+      el("loginError").textContent = "Akun ini tidak diizinkan mengakses app.";
+      return;
+    }
     hide(el("loginScreen"));
     startApp();
   } else {
@@ -58,6 +63,17 @@ el("loginBtn").addEventListener("click", async () => {
     await auth.signInWithEmailAndPassword(email, pass);
   } catch (e) {
     el("loginError").textContent = "Email/password salah.";
+  }
+});
+
+el("googleLoginBtn").addEventListener("click", async () => {
+  el("loginError").textContent = "";
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await auth.signInWithPopup(provider);
+  } catch (e) {
+    console.error(e);
+    el("loginError").textContent = "Gagal masuk dengan Google: " + e.message;
   }
 });
 
