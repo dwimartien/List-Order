@@ -3,12 +3,13 @@
 // Firebase Console -> Project Settings -> General -> "Your apps" -> Web app
 // =====================================================================
 const firebaseConfig = {
-  apiKey: "GANTI_API_KEY",
-  authDomain: "GANTI_PROJECT.firebaseapp.com",
-  projectId: "GANTI_PROJECT",
-  storageBucket: "GANTI_PROJECT.appspot.com",
-  messagingSenderId: "GANTI_SENDER_ID",
-  appId: "GANTI_APP_ID"
+  apiKey: "AIzaSyB5hUkh-CXVBwI1dz0z7M6ykFaFfdonxjo",
+  authDomain: "list-order-e2969.firebaseapp.com",
+  projectId: "list-order-e2969",
+  storageBucket: "list-order-e2969.firebasestorage.app",
+  messagingSenderId: "481906633016",
+  appId: "1:481906633016:web:290ffbbd5e2beb0a3db9cd",
+  measurementId: "G-RE0JCQK537"
 };
 
 // VAPID key untuk web push notification.
