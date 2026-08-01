@@ -16,7 +16,7 @@ const firebaseConfig = {
 // SIAPA SAJA yang punya akun Google bisa login ke app kamu. Isi email kamu
 // sendiri di sini supaya hanya akun ini yang diterima; akun Google lain akan
 // otomatis di-logout. Kosongkan ("") kalau kamu HANYA pakai email/password.
-const ADMIN_EMAIL = "isi-email-google-kamu@gmail.com";
+const ADMIN_EMAIL = "dwimartien@gmail.com";
 
 // VAPID key untuk web push notification.
 // Ambil di: Firebase Console -> Project Settings -> Cloud Messaging -> Web Push certificates -> Generate key pair
