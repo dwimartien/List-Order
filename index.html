@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Martien Design — Order Tracker</title>
+<meta name="theme-color" content="#0D1B2A">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- PIN LOCK SCREEN -->
+<div id="lockScreen" class="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">MD</div>
+    <h2>Order Tracker</h2>
+    <p class="lock-sub" id="lockSub">Masukkan PIN untuk lanjut</p>
+    <div class="pin-dots" id="pinDots">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="pin-pad">
+      <button data-num="1">1</button>
+      <button data-num="2">2</button>
+      <button data-num="3">3</button>
+      <button data-num="4">4</button>
+      <button data-num="5">5</button>
+      <button data-num="6">6</button>
+      <button data-num="7">7</button>
+      <button data-num="8">8</button>
+      <button data-num="9">9</button>
+      <button data-num="0" class="pin-zero">0</button>
+      <button id="pinBackspace">⌫</button>
+    </div>
+    <p class="lock-error" id="lockError"></p>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN (Firebase Auth) -->
+<div id="loginScreen" class="lock-screen" style="display:none;">
+  <div class="lock-box">
+    <div class="lock-logo">MD</div>
+    <h2>Masuk</h2>
+    <input type="email" id="loginEmail" placeholder="Email" class="login-input">
+    <input type="password" id="loginPassword" placeholder="Password" class="login-input">
+    <button id="loginBtn" class="btn-primary" style="width:100%;margin-top:12px;">Masuk</button>
+    <p class="lock-error" id="loginError"></p>
+  </div>
+</div>
+
+<div id="app" class="app" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="brand">
+        <div class="brand-mark">MD</div>
+        <div class="brand-name">Martien<span>Design</span></div>
+      </div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <span class="nav-icon">▦</span> Dashboard
+      </button>
+      <button class="nav-item" data-view="orders">
+        <span class="nav-icon">☰</span> Order
+      </button>
+      <button class="nav-item" data-view="archive">
+        <span class="nav-icon">🗄</span> Arsip Selesai
+      </button>
+      <button class="nav-item" data-view="settings">
+        <span class="nav-icon">⚙</span> Pengaturan
+      </button>
+    </nav>
+    <div class="sidebar-bottom">
+      <button id="lockNowBtn" class="nav-item">🔒 Kunci Layar</button>
+      <button id="logoutBtn" class="nav-item">⏻ Keluar</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view active">
+      <header class="topbar">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="muted" id="dashSubtitle">Ringkasan order kamu</p>
+        </div>
+      </header>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="statBelum">0</div>
+          <div class="stat-label">Belum Dikerjakan</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statRevisi">0</div>
+          <div class="stat-label">Revisi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statSelesai">0</div>
+          <div class="stat-label">Selesai (arsip)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="statTotal">0</div>
+          <div class="stat-label">Total Order Aktif</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Order per Kategori Project</h3>
+        <div id="catBreakdown" class="breakdown"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Order per Sumber</h3>
+        <div id="sourceBreakdown" class="breakdown"></div>
+      </div>
+    </section>
+
+    <!-- ORDERS VIEW -->
+    <section id="view-orders" class="view">
+      <header class="topbar">
+        <div>
+          <h1>Order</h1>
+          <p class="muted" id="orderCountLabel">0 order ditemukan</p>
+        </div>
+        <button id="addOrderBtn" class="btn-primary">+ Order Baru</button>
+      </header>
+
+      <div class="tabs" id="statusTabs">
+        <button class="tab active" data-status="all">Semua</button>
+        <button class="tab" data-status="belum">Belum Dikerjakan</button>
+        <button class="tab" data-status="revisi">Revisi</button>
+      </div>
+
+      <div class="toolbar">
+        <input type="text" id="searchInput" class="search-input" placeholder="Cari nama desain atau klien...">
+        <select id="sortSelect" class="select-input">
+          <option value="createdAt_desc">Terbaru dulu</option>
+          <option value="createdAt_asc">Terlama dulu</option>
+          <option value="nama_asc">Nama A-Z</option>
+          <option value="nama_desc">Nama Z-A</option>
+          <option value="kesulitan_desc">Kesulitan: Susah dulu</option>
+        </select>
+        <select id="filterKategori" class="select-input">
+          <option value="">Semua Kategori</option>
+        </select>
+        <select id="filterSumber" class="select-input">
+          <option value="">Semua Sumber</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th>Desain</th>
+              <th>Klien</th>
+              <th>Kategori</th>
+              <th>Sumber</th>
+              <th>Kesulitan</th>
+              <th>Status</th>
+              <th>Masuk</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="orderTableBody"></tbody>
+        </table>
+        <div id="emptyState" class="empty-state" style="display:none;">
+          <p>Belum ada order di sini.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHIVE VIEW -->
+    <section id="view-archive" class="view">
+      <header class="topbar">
+        <div>
+          <h1>Arsip Selesai</h1>
+          <p class="muted" id="archiveCountLabel">0 order selesai</p>
+        </div>
+      </header>
+      <div class="toolbar">
+        <input type="text" id="archiveSearchInput" class="search-input" placeholder="Cari di arsip...">
+      </div>
+      <div class="table-wrap">
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th>Desain</th>
+              <th>Klien</th>
+              <th>Kategori</th>
+              <th>Sumber</th>
+              <th>Kesulitan</th>
+              <th>Selesai Pada</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="archiveTableBody"></tbody>
+        </table>
+        <div id="archiveEmptyState" class="empty-state" style="display:none;">
+          <p>Belum ada order yang selesai.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section id="view-settings" class="view">
+      <header class="topbar">
+        <div>
+          <h1>Pengaturan</h1>
+          <p class="muted">Reminder, kategori, sumber, dan keamanan</p>
+        </div>
+      </header>
+
+      <div class="panel">
+        <h3>Reminder Cek Order</h3>
+        <p class="muted">Notifikasi akan muncul walau app ditutup, sesuai interval berikut.</p>
+        <div class="form-row">
+          <select id="reminderPreset" class="select-input">
+            <option value="2">Tiap 2 jam</option>
+            <option value="3">Tiap 3 jam</option>
+            <option value="custom">Custom</option>
+            <option value="off">Matikan</option>
+          </select>
+          <input type="number" id="reminderCustom" class="select-input" placeholder="Jam" min="1" style="display:none; width:100px;">
+          <button id="saveReminderBtn" class="btn-primary">Simpan</button>
+        </div>
+        <p class="muted" id="reminderStatus"></p>
+        <button id="enableNotifBtn" class="btn-secondary">Aktifkan Izin Notifikasi</button>
+      </div>
+
+      <div class="panel">
+        <h3>Kategori Project</h3>
+        <div class="chip-list" id="categoryChipList"></div>
+        <div class="form-row">
+          <input type="text" id="newCategoryInput" class="select-input" placeholder="Tambah kategori project (mis. Logo, Vector, Wrap)">
+          <button id="addCategoryBtn" class="btn-secondary">Tambah</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Sumber Order</h3>
+        <div class="chip-list" id="sourceChipList"></div>
+        <div class="form-row">
+          <input type="text" id="newSourceInput" class="select-input" placeholder="Tambah sumber (mis. Fiverr, Fastwork, WA)">
+          <button id="addSourceBtn" class="btn-secondary">Tambah</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Kunci PIN</h3>
+        <p class="muted">PIN 4 digit untuk mengunci app saat dibuka ulang.</p>
+        <div class="form-row">
+          <input type="password" id="newPinInput" class="select-input" placeholder="PIN baru (4 digit)" maxlength="4" inputmode="numeric">
+          <button id="savePinBtn" class="btn-secondary">Simpan PIN</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Export Data</h3>
+        <button id="exportCsvBtn" class="btn-secondary">Export Semua Order ke CSV</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ORDER MODAL (Add/Edit) -->
+<div id="orderModal" class="modal-overlay" style="display:none;">
+  <div class="modal">
+    <h3 id="orderModalTitle">Order Baru</h3>
+    <label>Nama Desain</label>
+    <input type="text" id="fNamaDesain" class="modal-input" placeholder="mis. Logo Toko Roti Bahagia">
+
+    <label>Nama Klien</label>
+    <input type="text" id="fKlienNama" class="modal-input" list="clientNameList" placeholder="mis. Budi Santoso">
+    <datalist id="clientNameList"></datalist>
+
+    <label>No. WhatsApp Klien</label>
+    <input type="text" id="fKlienWA" class="modal-input" placeholder="mis. 6281234567890">
+
+    <label>Kategori Project</label>
+    <select id="fKategori" class="modal-input"></select>
+
+    <label>Sumber Order</label>
+    <select id="fSumber" class="modal-input"></select>
+
+    <label>Tingkat Kesulitan</label>
+    <div class="difficulty-picker" id="difficultyPicker">
+      <button type="button" data-level="mudah" class="diff-btn diff-mudah">Mudah</button>
+      <button type="button" data-level="sedang" class="diff-btn diff-sedang">Sedang</button>
+      <button type="button" data-level="susah" class="diff-btn diff-susah">Susah</button>
+    </div>
+
+    <label class="checkbox-row"><input type="checkbox" id="fUrgent"> Tandai Urgent</label>
+
+    <label>Catatan (opsional)</label>
+    <textarea id="fCatatan" class="modal-input" rows="2" placeholder="Detail request, dll."></textarea>
+
+    <div class="modal-actions">
+      <button id="cancelOrderBtn" class="btn-secondary">Batal</button>
+      <button id="saveOrderBtn" class="btn-primary">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK (compat, no build step needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
+
+<script src="js/firebase-config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
