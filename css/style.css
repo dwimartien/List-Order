@@ -250,6 +250,20 @@ input, select, textarea { font-family: inherit; }
 .login-input {
   width: 100%; padding: 12px; border-radius: 10px; border: none; margin-top: 10px; font-size: 14px;
 }
+.login-divider {
+  display: flex; align-items: center; gap: 10px; color: #7A8FA8; font-size: 12px;
+  margin: 16px 0 12px;
+}
+.login-divider::before, .login-divider::after {
+  content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.15);
+}
+.btn-google {
+  background: #fff; color: #1B2430; border: none; border-radius: 10px;
+  padding: 11px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-google:hover { background: #F0F3F8; }
+.google-icon { width: 18px; height: 18px; }
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 860px) {
