@@ -31,11 +31,7 @@ body {
 button { font-family: inherit; cursor: pointer; }
 input, select, textarea { font-family: inherit; }
 
-/* ---------- APP LAYOUT ---------- */
-.app {
-  display: flex;
-  min-height: 100vh;
-}
+.app { display: flex; min-height: 100vh; }
 
 .sidebar {
   width: 230px;
@@ -84,7 +80,6 @@ input, select, textarea { font-family: inherit; }
 .view { display: none; }
 .view.active { display: block; }
 
-/* ---------- BUTTONS ---------- */
 .btn-primary {
   background: var(--navy-800); color: #fff; border: none;
   padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 600;
@@ -96,7 +91,6 @@ input, select, textarea { font-family: inherit; }
 }
 .btn-secondary:hover { background: #F0F3F8; }
 
-/* ---------- STAT CARDS ---------- */
 .stat-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px;
 }
@@ -119,7 +113,6 @@ input, select, textarea { font-family: inherit; }
 .breakdown-bar { height: 100%; background: var(--navy-700); border-radius: 6px; }
 .breakdown-count { width: 24px; text-align: right; color: var(--muted); }
 
-/* ---------- TABS / TOOLBAR ---------- */
 .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
 .tab {
   background: transparent; border: 1px solid var(--border); color: var(--muted);
@@ -134,7 +127,6 @@ input, select, textarea { font-family: inherit; }
 }
 .search-input { flex: 1; min-width: 180px; }
 
-/* ---------- TABLE ---------- */
 .table-wrap {
   background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
   overflow-x: auto;
@@ -184,7 +176,6 @@ input, select, textarea { font-family: inherit; }
 
 .empty-state { padding: 40px; text-align: center; color: var(--muted); }
 
-/* ---------- CHIPS / SETTINGS ---------- */
 .chip-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .chip {
   background: var(--bg); border: 1px solid var(--border); border-radius: 20px;
@@ -196,7 +187,6 @@ input, select, textarea { font-family: inherit; }
 .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 10px 0; }
 .checkbox-row input { width: auto; }
 
-/* ---------- MODAL ---------- */
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(13,27,42,.5);
   display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px;
@@ -222,7 +212,6 @@ input, select, textarea { font-family: inherit; }
 .diff-btn.selected.diff-sedang { background: var(--amber-bg); color: #B8791F; border-color: var(--amber); }
 .diff-btn.selected.diff-susah { background: var(--red-bg); color: var(--red); border-color: var(--red); }
 
-/* ---------- LOCK / LOGIN SCREEN ---------- */
 .lock-screen {
   position: fixed; inset: 0; background: var(--navy-900); z-index: 200;
   display: flex; align-items: center; justify-content: center; color: #fff;
@@ -265,7 +254,41 @@ input, select, textarea { font-family: inherit; }
 .btn-google:hover { background: #F0F3F8; }
 .google-icon { width: 18px; height: 18px; }
 
-/* ---------- RESPONSIVE ---------- */
+.pip-widget {
+  width: 100%; height: 100vh; box-sizing: border-box;
+  background: linear-gradient(150deg, rgba(20,39,61,.80), rgba(13,27,42,.92));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.14);
+  color: #fff; padding: 14px; display: flex; flex-direction: column; gap: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: hidden;
+}
+.pip-header {
+  display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13px;
+  letter-spacing: .02em; color: #DCE6F2;
+}
+.pip-header .pip-logo {
+  width: 22px; height: 22px; border-radius: 6px; background: rgba(255,255,255,.12);
+  display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700;
+}
+.pip-stats { display: flex; gap: 10px; }
+.pip-stat {
+  flex: 1; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 10px; padding: 8px 10px; text-align: center;
+}
+.pip-stat span { display: block; font-size: 20px; font-weight: 700; }
+.pip-stat label { font-size: 10.5px; color: #A9BAD0; }
+.pip-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.pip-item {
+  display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,.05);
+  border-radius: 8px; padding: 7px 9px; font-size: 12px;
+}
+.pip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.pip-dot.status-belum { background: #F0A93B; }
+.pip-dot.status-revisi { background: #E0553F; }
+.pip-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 @media (max-width: 860px) {
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .app { flex-direction: column; }
