@@ -1,47 +1,21 @@
 // Service Worker — Martien Design Order Tracker
-// 1) Cache app shell biar bisa dibuka offline
-// 2) Terima push notification dari Firebase Cloud Messaging walau app ditutup
+// HANYA untuk 1 hal: terima push notification reminder walau app ditutup.
+// TIDAK ikut campur di request/fetch apa pun lagi (biar gak pernah lagi
+// bentrok sama koneksi real-time Firestore/Auth).
 
-const CACHE_NAME = "order-tracker-v5";
-const APP_SHELL = [
-  "./",
-  "./index.html",
-  "./css/style.css",
-  "./js/app.js",
-  "./js/firebase-config.js",
-  "./manifest.json"
-];
+const CACHE_NAME = "order-tracker-v6";
 
 self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
-  );
   self.skipWaiting();
 });
 
 self.addEventListener("activate", event => {
+  // Bersihkan cache lama dari versi-versi sebelumnya (v1-v5) yang mungkin
+  // masih nyangkut di browser
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
+    caches.keys().then(keys => Promise.all(keys.map(k => caches.delete(k))))
   );
   self.clients.claim();
-});
-
-self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
-  if (url.origin !== self.location.origin) return; // biarkan browser handle langsung
-  if (event.request.method !== "GET") return; // Cache API cuma bisa simpan request GET
-
-  event.respondWith(
-    fetch(event.request, { cache: "no-store" })
-      .then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
-        return response;
-      })
-      .catch(() => caches.match(event.request))
-  );
 });
 
 // ---- Firebase Cloud Messaging (background push) ----
@@ -50,12 +24,13 @@ importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-com
 
 // PENTING: ganti dengan config yang SAMA seperti di js/firebase-config.js
 firebase.initializeApp({
-  apiKey: "GANTI_API_KEY",
-  authDomain: "GANTI_PROJECT.firebaseapp.com",
-  projectId: "GANTI_PROJECT",
-  storageBucket: "GANTI_PROJECT.appspot.com",
-  messagingSenderId: "GANTI_SENDER_ID",
-  appId: "GANTI_APP_ID"
+ apiKey: "AIzaSyB5hUkh-CXVBwI1dz0z7M6ykFaFfdonxjo",
+  authDomain: "list-order-e2969.firebaseapp.com",
+  projectId: "list-order-e2969",
+  storageBucket: "list-order-e2969.firebasestorage.app",
+  messagingSenderId: "481906633016",
+  appId: "1:481906633016:web:290ffbbd5e2beb0a3db9cd",
+  measurementId: "G-RE0JCQK537"
 });
 
 const messaging = firebase.messaging();
