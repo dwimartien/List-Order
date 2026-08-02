@@ -2,17 +2,14 @@
 // Martien Design — Order Tracker
 // =========================================================================
 
-let allOrders = [];       // semua order dari Firestore (live)
-let categories = [];      // kategori project
-let sources = [];         // sumber order
-let settings = {};        // { reminderIntervalHours, pinHash, lastReminderAt }
+let allOrders = [];
+let categories = [];
+let sources = [];
+let settings = {};
 let editingOrderId = null;
 let currentStatusTab = "all";
-let currentDifficulty = null; // dipakai saat isi form modal
+let currentDifficulty = null;
 
-// -------------------------------------------------------------------------
-// UTIL
-// -------------------------------------------------------------------------
 async function sha256(text) {
   const enc = new TextEncoder().encode(text);
   const buf = await crypto.subtle.digest("SHA-256", enc);
@@ -36,9 +33,6 @@ function el(id) { return document.getElementById(id); }
 function show(node) { node.style.display = ""; }
 function hide(node) { node.style.display = "none"; }
 
-// -------------------------------------------------------------------------
-// AUTH
-// -------------------------------------------------------------------------
 auth.onAuthStateChanged(async user => {
   if (user) {
     if (ADMIN_EMAIL && user.email !== ADMIN_EMAIL) {
@@ -82,9 +76,6 @@ el("logoutBtn").addEventListener("click", async () => {
   location.reload();
 });
 
-// -------------------------------------------------------------------------
-// PIN LOCK
-// -------------------------------------------------------------------------
 let pinBuffer = "";
 
 function renderPinDots() {
@@ -129,9 +120,6 @@ el("lockNowBtn").addEventListener("click", () => {
   }
 });
 
-// -------------------------------------------------------------------------
-// APP STARTUP — pasang semua listener Firestore
-// -------------------------------------------------------------------------
 function startApp() {
   db.collection("meta").doc("settings").onSnapshot(doc => {
     settings = doc.exists ? doc.data() : {};
@@ -165,14 +153,12 @@ function startApp() {
     renderArchive();
     renderDashboard();
     populateClientDatalist();
+    renderFloatingWidget();
   });
 
   registerServiceWorkerAndMessaging();
 }
 
-// -------------------------------------------------------------------------
-// NAVIGATION
-// -------------------------------------------------------------------------
 document.querySelectorAll(".nav-item[data-view]").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".nav-item[data-view]").forEach(b => b.classList.remove("active"));
@@ -182,9 +168,6 @@ document.querySelectorAll(".nav-item[data-view]").forEach(btn => {
   });
 });
 
-// -------------------------------------------------------------------------
-// SELECT / CHIP HELPERS
-// -------------------------------------------------------------------------
 function populateSelect(selectEl, list) {
   const current = selectEl.value;
   selectEl.innerHTML = list.map(c => `<option value="${c}">${c}</option>`).join("");
@@ -256,9 +239,6 @@ el("fKlienNama").addEventListener("input", () => {
   if (match && !el("fKlienWA").value) el("fKlienWA").value = match.klienWA || "";
 });
 
-// -------------------------------------------------------------------------
-// ORDER FILTER / SORT / SEARCH (active view: belum + revisi)
-// -------------------------------------------------------------------------
 document.querySelectorAll("#statusTabs .tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll("#statusTabs .tab").forEach(t => t.classList.remove("active"));
@@ -408,9 +388,6 @@ async function deleteOrder(id) {
   await db.collection("orders").doc(id).delete();
 }
 
-// -------------------------------------------------------------------------
-// DASHBOARD
-// -------------------------------------------------------------------------
 function renderDashboard() {
   const belum = allOrders.filter(o => o.status === "belum").length;
   const revisi = allOrders.filter(o => o.status === "revisi").length;
@@ -446,9 +423,6 @@ function renderBreakdown(containerId, list, field) {
   `).join("");
 }
 
-// -------------------------------------------------------------------------
-// ORDER MODAL (Add / Edit)
-// -------------------------------------------------------------------------
 el("addOrderBtn").addEventListener("click", () => openAddModal());
 el("cancelOrderBtn").addEventListener("click", () => closeModal());
 
@@ -523,9 +497,6 @@ el("saveOrderBtn").addEventListener("click", async () => {
   closeModal();
 });
 
-// -------------------------------------------------------------------------
-// PIN SETTINGS
-// -------------------------------------------------------------------------
 el("savePinBtn").addEventListener("click", async () => {
   const pin = el("newPinInput").value.trim();
   if (!/^\d{4}$/.test(pin)) { alert("PIN harus 4 digit angka."); return; }
@@ -535,9 +506,6 @@ el("savePinBtn").addEventListener("click", async () => {
   alert("PIN tersimpan.");
 });
 
-// -------------------------------------------------------------------------
-// REMINDER SETTINGS
-// -------------------------------------------------------------------------
 el("reminderPreset").addEventListener("change", () => {
   el("reminderCustom").style.display = el("reminderPreset").value === "custom" ? "" : "none";
 });
@@ -569,9 +537,6 @@ function renderReminderStatus() {
   }
 }
 
-// -------------------------------------------------------------------------
-// NOTIFICATIONS (FCM + Service Worker)
-// -------------------------------------------------------------------------
 async function registerServiceWorkerAndMessaging() {
   if (!("serviceWorker" in navigator)) return;
   try {
@@ -596,9 +561,69 @@ el("enableNotifBtn").addEventListener("click", async () => {
   }
 });
 
-// -------------------------------------------------------------------------
-// CSV EXPORT
-// -------------------------------------------------------------------------
+let pipWindow = null;
+
+el("openWidgetBtn").addEventListener("click", async () => {
+  if (!("documentPictureInPicture" in window)) {
+    alert("Fitur widget mengambang butuh Chrome atau Edge versi terbaru di Windows/Mac/Linux. Browser ini belum mendukung.");
+    return;
+  }
+  if (pipWindow) { pipWindow.focus(); return; }
+
+  pipWindow = await documentPictureInPicture.requestWindow({ width: 300, height: 260 });
+
+  [...document.styleSheets].forEach(styleSheet => {
+    try {
+      const rules = [...styleSheet.cssRules].map(r => r.cssText).join("");
+      const style = pipWindow.document.createElement("style");
+      style.textContent = rules;
+      pipWindow.document.head.appendChild(style);
+    } catch (e) {
+      const link = pipWindow.document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = styleSheet.href;
+      pipWindow.document.head.appendChild(link);
+    }
+  });
+
+  pipWindow.document.body.style.margin = "0";
+  pipWindow.document.body.innerHTML = `
+    <div class="pip-widget">
+      <div class="pip-header"><span class="pip-logo">MD</span> Order Tracker</div>
+      <div class="pip-stats">
+        <div class="pip-stat"><span id="pipBelum">0</span><label>Belum</label></div>
+        <div class="pip-stat"><span id="pipRevisi">0</span><label>Revisi</label></div>
+      </div>
+      <div class="pip-list" id="pipList"></div>
+    </div>
+  `;
+
+  pipWindow.addEventListener("pagehide", () => { pipWindow = null; });
+  renderFloatingWidget();
+});
+
+function renderFloatingWidget() {
+  if (!pipWindow) return;
+  const doc = pipWindow.document;
+  const belum = allOrders.filter(o => o.status === "belum").length;
+  const revisi = allOrders.filter(o => o.status === "revisi").length;
+  const belumEl = doc.getElementById("pipBelum");
+  const revisiEl = doc.getElementById("pipRevisi");
+  const listEl = doc.getElementById("pipList");
+  if (!belumEl) return;
+
+  belumEl.textContent = belum;
+  revisiEl.textContent = revisi;
+
+  const active = getActiveOrders().slice(0, 8);
+  listEl.innerHTML = active.map(o => `
+    <div class="pip-item">
+      <span class="pip-dot status-${o.status}"></span>
+      <span class="pip-name">${escapeHtml(o.nama)}${o.klienNama ? " — " + escapeHtml(o.klienNama) : ""}</span>
+    </div>
+  `).join("") || `<div style="color:#A9BAD0; padding:8px; font-size:12px;">Tidak ada order aktif 🎉</div>`;
+}
+
 el("exportCsvBtn").addEventListener("click", () => {
   const header = ["Nama Desain", "Klien", "No WA", "Kategori", "Sumber", "Kesulitan", "Status", "Urgent", "Catatan", "Dibuat", "Selesai"];
   const rows = allOrders.map(o => [
