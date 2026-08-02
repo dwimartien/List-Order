@@ -2,7 +2,7 @@
 // 1) Cache app shell biar bisa dibuka offline
 // 2) Terima push notification dari Firebase Cloud Messaging walau app ditutup
 
-const CACHE_NAME = "order-tracker-v1";
+const CACHE_NAME = "order-tracker-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -28,9 +28,18 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
+// Network-first + no-store: selalu ambil versi terbaru dari server,
+// gak ngecek cache HTTP browser ataupun cache service worker dulu.
+// Cuma pakai cache kalau HP/PC lagi offline.
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    fetch(event.request, { cache: "no-store" })
+      .then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 
@@ -38,7 +47,6 @@ self.addEventListener("fetch", event => {
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js");
 
-// PENTING: ganti dengan config yang SAMA seperti di js/firebase-config.js
 firebase.initializeApp({
   apiKey: "GANTI_API_KEY",
   authDomain: "GANTI_PROJECT.firebaseapp.com",
