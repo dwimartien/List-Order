@@ -2,7 +2,7 @@
 // 1) Cache app shell biar bisa dibuka offline
 // 2) Terima push notification dari Firebase Cloud Messaging walau app ditutup
 
-const CACHE_NAME = "order-tracker-v3";
+const CACHE_NAME = "order-tracker-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -28,10 +28,15 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-// Network-first + no-store: selalu ambil versi terbaru dari server,
-// gak ngecek cache HTTP browser ataupun cache service worker dulu.
-// Cuma pakai cache kalau HP/PC lagi offline.
+// Network-first + no-store, TAPI cuma untuk file dari web kita sendiri
+// (same-origin). Request ke Firebase Auth/Firestore/gstatic (cross-origin)
+// dibiarkan lewat apa adanya — kalau ikut di-intercept, bisa mengganggu
+// koneksi real-time Firestore (termasuk baca status PIN) dan bikin app
+// nyangkut/gagal aneh.
 self.addEventListener("fetch", event => {
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return; // biarkan browser handle langsung
+
   event.respondWith(
     fetch(event.request, { cache: "no-store" })
       .then(response => {
@@ -47,6 +52,7 @@ self.addEventListener("fetch", event => {
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js");
 
+// PENTING: ganti dengan config yang SAMA seperti di js/firebase-config.js
 firebase.initializeApp({
   apiKey: "GANTI_API_KEY",
   authDomain: "GANTI_PROJECT.firebaseapp.com",
